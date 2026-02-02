@@ -87,22 +87,22 @@
 
 ### Tests for User Story 2 (MANDATORY per Constitution) 🛑
 
-- [ ] T020 [P] [US2] Create unit tests for LogStream buffering (ring buffer) in `tests/unit/agent.test.ts`
-- [ ] T021 [P] [US2] Create integration test for SSE endpoint (`/stream/logs/:id`) in `tests/integration/serverFlow.test.ts`
+- [x] T020 [P] [US2] Create unit tests for LogStream buffering (ring buffer) in `tests/unit/agent.test.ts`
+- [x] T021 [P] [US2] Create integration test for SSE endpoint (`/stream/logs/:id`) in `tests/integration/serverFlow.test.ts`
 
 ### Documentation for User Story 2 (MANDATORY per Constitution) 📝
 
-- [ ] T022 [P] [US2] Document SSE endpoint behavior
+- [x] T022 [P] [US2] Document SSE endpoint behavior
 
 ### Implementation for User Story 2
 
-- [ ] T023 [US2] Implement Ring Buffer log storage in `src/domain/agent.ts`
-- [ ] T024 [US2] Implement SSE endpoint `/stream/logs/:id` in `src/infrastructure/server.ts`
-- [ ] T025 [US2] Integrate ACP SDK to parse stdout for status updates in `src/infrastructure/process.ts`
-- [ ] T026 [US2] Implement ACP message filtering (hide raw ACP lines) in `src/infrastructure/process.ts`
-- [ ] T027 [US2] Implement frontend SSE listener and log display in `src/web/app.js`
-- [ ] T028 [US2] Implement frontend status indicator (Traffic Light) logic in `src/web/app.js`
-- [ ] T029 [P] [US2] Style log view and status indicators in `src/web/style.css`
+- [x] T023 [US2] Implement Ring Buffer log storage in `src/domain/agent.ts`
+- [x] T024 [US2] Implement SSE endpoint `/stream/logs/:id` in `src/infrastructure/server.ts`
+- [x] T025 [US2] Integrate ACP SDK to parse stdout for status updates in `src/infrastructure/process.ts`
+- [x] T026 [US2] Implement ACP message filtering (hide raw ACP lines) in `src/infrastructure/process.ts`
+- [x] T027 [US2] Implement frontend SSE listener and log display in `src/web/app.js`
+- [x] T028 [US2] Implement frontend status indicator (Traffic Light) logic in `src/web/app.js`
+- [x] T029 [P] [US2] Style log view and status indicators in `src/web/style.css`
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -116,19 +116,19 @@
 
 ### Tests for User Story 3 (MANDATORY per Constitution) 🛑
 
-- [ ] T030 [P] [US3] Create integration test for POST /api/agents/:id/stdin in `tests/integration/serverFlow.test.ts`
+- [x] T030 [P] [US3] Create integration test for POST /api/agents/:id/stdin in `tests/integration/serverFlow.test.ts`
 
 ### Documentation for User Story 3 (MANDATORY per Constitution) 📝
 
-- [ ] T031 [P] [US3] Document stdin endpoint
+- [x] T031 [P] [US3] Document stdin endpoint
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Implement write-to-stdin logic in `src/infrastructure/process.ts`
-- [ ] T033 [US3] Implement POST /api/agents/:id/stdin endpoint in `src/infrastructure/server.ts`
-- [ ] T034 [US3] Add Input Box to frontend agent detail view in `src/web/index.html`
-- [ ] T035 [US3] Implement frontend logic to enable/disable input based on status in `src/web/app.js`
-- [ ] T036 [US3] Implement frontend logic to send input on Enter in `src/web/app.js`
+- [x] T032 [US3] Implement write-to-stdin logic in `src/infrastructure/process.ts`
+- [x] T033 [US3] Implement POST /api/agents/:id/stdin endpoint in `src/infrastructure/server.ts`
+- [x] T034 [US3] Add Input Box to frontend agent detail view in `src/web/index.html`
+- [x] T035 [US3] Implement frontend logic to enable/disable input based on status in `src/web/app.js`
+- [x] T036 [US3] Implement frontend logic to send input on Enter in `src/web/app.js`
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -138,11 +138,11 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T037 [P] Implement "Last Command" persistence (sessionStorage or server-side session) in `src/web/app.js`
-- [ ] T038 Review and refine UI styling in `src/web/style.css`
-- [ ] T039 Ensure error handling for invalid commands/paths is robust in `src/infrastructure/server.ts`
-- [ ] T040 Final integration test run `npm test`
-- [ ] T041 Update `quickstart.md` with final instructions
+- [x] T037 [P] Implement "Last Command" persistence (sessionStorage or server-side session) in `src/web/app.js`
+- [x] T038 Review and refine UI styling in `src/web/style.css`
+- [x] T039 Ensure error handling for invalid commands/paths is robust in `src/infrastructure/server.ts`
+- [x] T040 Final integration test run `npm test`
+- [x] T041 Update `quickstart.md` with final instructions
 
 ---
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AgentManager, InMemoryAgentManager } from '../../src/domain/agentManager'; // Will implement InMemoryAgentManager in T014
-import { Agent } from '../../src/domain/agent';
+import { AgentManager, InMemoryAgentManager } from '../../src/domain/agentManager';
+import { AgentInstance } from '../../src/domain/agent';
 
 describe('AgentManager', () => {
   let manager: AgentManager;
@@ -10,16 +10,17 @@ describe('AgentManager', () => {
   });
 
   it('should create an agent', async () => {
-    const agent = await manager.createAgent({
+    const instance = await manager.createAgent({
       name: 'Test Agent',
       command: 'echo "hello"',
       working_directory: '/tmp',
     });
 
+    const agent = instance.data;
     expect(agent.id).toBeDefined();
     expect(agent.name).toBe('Test Agent');
     expect(agent.command).toBe('echo "hello"');
-    expect(agent.status).toBe('stopped'); // Initial status might be stopped until started
+    expect(agent.status).toBe('stopped');
     expect(agent.created_at).toBeDefined();
   });
 
@@ -29,13 +30,13 @@ describe('AgentManager', () => {
 
     const agents = await manager.listAgents();
     expect(agents).toHaveLength(2);
-    expect(agents[0].name).toBe('A1');
-    expect(agents[1].name).toBe('A2');
+    expect(agents[0].data.name).toBe('A1');
+    expect(agents[1].data.name).toBe('A2');
   });
 
   it('should get an agent by id', async () => {
     const created = await manager.createAgent({ name: 'A1', command: 'c1', working_directory: 'd1' });
-    const fetched = await manager.getAgent(created.id);
+    const fetched = await manager.getAgent(created.data.id);
     expect(fetched).toEqual(created);
   });
 

@@ -1,42 +1,43 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Agent, AgentSchema } from './agent';
-import { AgentManager, CreateAgentParams } from './agentManager';
+import { Agent, AgentSchema, AgentInstance } from './agent';
+
+export interface CreateAgentParams {
+  name: string;
+  command: string;
+  working_directory: string;
+}
+
+export interface AgentManager {
+  createAgent(params: CreateAgentParams): Promise<AgentInstance>;
+  listAgents(): Promise<AgentInstance[]>;
+  getAgent(id: string): Promise<AgentInstance | undefined>;
+}
 
 export class InMemoryAgentManager implements AgentManager {
-  private agents: Map<string, Agent> = new Map();
+  private agents: Map<string, AgentInstance> = new Map();
 
-  async createAgent(params: CreateAgentParams): Promise<Agent> {
-    const newAgent: Agent = {
+  async createAgent(params: CreateAgentParams): Promise<AgentInstance> {
+    const rawAgent: Agent = {
       id: uuidv4(),
       name: params.name,
       command: params.command,
       working_directory: params.working_directory,
-      status: 'stopped', // Will be updated to running by the process starter usually, but initially created
+      status: 'stopped',
       created_at: new Date(),
     };
 
-    // Validate using Zod
-    AgentSchema.parse(newAgent);
+    AgentSchema.parse(rawAgent);
 
-    this.agents.set(newAgent.id, newAgent);
-    return newAgent;
+    const instance = new AgentInstance(rawAgent);
+    this.agents.set(rawAgent.id, instance);
+    return instance;
   }
 
-  async listAgents(): Promise<Agent[]> {
+  async listAgents(): Promise<AgentInstance[]> {
     return Array.from(this.agents.values());
   }
 
-  async getAgent(id: string): Promise<Agent | undefined> {
+  async getAgent(id: string): Promise<AgentInstance | undefined> {
     return this.agents.get(id);
-  }
-
-  async updateAgentStatus(id: string, status: Agent['status'], pid?: number, exit_code?: number): Promise<void> {
-    const agent = this.agents.get(id);
-    if (agent) {
-      agent.status = status;
-      if (pid !== undefined) agent.pid = pid;
-      if (exit_code !== undefined) agent.exit_code = exit_code;
-      this.agents.set(id, agent);
-    }
   }
 }

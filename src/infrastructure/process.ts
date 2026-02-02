@@ -5,6 +5,7 @@ export interface ProcessEvents {
   stdout: (data: string) => void;
   stderr: (data: string) => void;
   exit: (code: number | null) => void;
+  acp: (message: any) => void;
 }
 
 export class ProcessWrapper extends EventEmitter {
@@ -19,10 +20,6 @@ export class ProcessWrapper extends EventEmitter {
   }
 
   start(): number | undefined {
-    // Split command string if no args provided, or execute as shell command
-    const [cmd, ...cmdArgs] = this.args.length > 0 ? [this.command, ...this.args] : this.command.split(' ');
-    
-    // Use shell: true to handle complex command strings like "python script.py"
     this.child = spawn(this.command, this.args, {
       cwd: this.cwd,
       shell: true,
@@ -31,13 +28,35 @@ export class ProcessWrapper extends EventEmitter {
 
     if (this.child.stdout) {
       this.child.stdout.on('data', (data: Buffer) => {
-        this.emit('stdout', data.toString());
+        const text = data.toString();
+        const lines = text.split('\n');
+        
+        for (const line of lines) {
+          if (line.trim().startsWith('ACP:')) {
+            try {
+              const jsonStr = line.trim().substring(4).trim();
+              const message = JSON.parse(jsonStr);
+              this.emit('acp', message);
+              // T026: Filter out raw ACP lines
+              continue; 
+            } catch (e) {
+              // Not valid JSON, treat as regular log
+            }
+          }
+          if (line) {
+            this.emit('stdout', line);
+          }
+        }
       });
     }
 
     if (this.child.stderr) {
       this.child.stderr.on('data', (data: Buffer) => {
-        this.emit('stderr', data.toString());
+        const text = data.toString();
+        const lines = text.split('\n');
+        for (const line of lines) {
+          if (line) this.emit('stderr', line);
+        }
       });
     }
 
@@ -47,7 +66,6 @@ export class ProcessWrapper extends EventEmitter {
 
     this.child.on('error', (err) => {
         console.error('Process spawn error:', err);
-        // Maybe emit exit with error code?
         this.emit('exit', 1);
     });
 

@@ -18,7 +18,6 @@ describe('Server Integration Flow', () => {
   });
 
   it('should list created agents', async () => {
-    // Create one first to ensure list isn't empty (dependent on persistence mock/reset in real app)
     await request(app).post('/api/agents').send({
       name: 'Listable Agent',
       command: 'true',
@@ -28,8 +27,23 @@ describe('Server Integration Flow', () => {
     const response = await request(app).get('/api/agents');
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body.length).toBeGreaterThan(0);
     const agent = response.body.find((a: any) => a.name === 'Listable Agent');
     expect(agent).toBeDefined();
+  });
+
+  it('should send stdin to agent', async () => {
+    // We use a command that waits for input
+    const createRes = await request(app).post('/api/agents').send({
+      name: 'Interactive Agent',
+      command: 'node -e "process.stdin.on(\'data\', (d) => console.log(\'GOT:\' + d))"',
+      working_directory: '.',
+    });
+    
+    const id = createRes.body.id;
+    const response = await request(app)
+      .post(`/api/agents/${id}/stdin`)
+      .send({ input: 'hello world' });
+
+    expect(response.status).toBe(204);
   });
 });
