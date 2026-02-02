@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Wrangler</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <aside id="sidebar">
+            <h2>Agents</h2>
+            <ul id="agent-list">
+                <!-- Agents injected here -->
+            </ul>
+            <button id="btn-new-agent">New Agent</button>
+        </aside>
+        <main id="main-content">
+            <div id="agent-detail" style="display: none;">
+                <header>
+                    <h1 id="agent-name"></h1>
+                    <span id="agent-status" class="status-indicator"></span>
+                </header>
+                <div id="logs-container">
+                    <pre id="logs-output"></pre>
+                </div>
+                <div id="input-container">
+                    <input type="text" id="stdin-input" placeholder="Send input..." disabled>
+                    <button id="btn-send">Send</button>
+                </div>
+            </div>
+            <div id="new-agent-form" style="display: none;">
+                <h1>Create New Agent</h1>
+                <form id="create-agent-form">
+                    <div>
+                        <label for="name">Display Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div>
+                        <label for="working_directory">Working Directory</label>
+                        <input type="text" id="working_directory" name="working_directory" required>
+                    </div>
+                    <div>
+                        <label for="command">Command</label>
+                        <input type="text" id="command" name="command" required>
+                    </div>
+                    <button type="submit">Start Agent</button>
+                    <button type="button" id="btn-cancel">Cancel</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

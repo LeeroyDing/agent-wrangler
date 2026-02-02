@@ -25,11 +25,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Initialize Node.js project (`package.json`) and gitignore
-- [ ] T002 Install dependencies (`express`, `@agentclientprotocol/sdk`, `zod`) and dev dependencies (`typescript`, `vitest`, `ts-node`, `@types/node`, `@types/express`)
-- [ ] T003 [P] Initialize TypeScript configuration (`tsconfig.json`) with `strict: true`
-- [ ] T004 [P] Create project directory structure (`src/domain`, `src/infrastructure`, `src/web`, `tests/unit`, `tests/integration`)
-- [ ] T005 [P] Setup Vitest configuration (`vitest.config.ts`)
+- [x] T001 Initialize Node.js project (`package.json`) and gitignore
+- [x] T002 Install dependencies (`express`, `@agentclientprotocol/sdk`, `zod`) and dev dependencies (`typescript`, `vitest`, `ts-node`, `@types/node`, `@types/express`)
+- [x] T003 [P] Initialize TypeScript configuration (`tsconfig.json`) with `strict: true`
+- [x] T004 [P] Create project directory structure (`src/domain`, `src/infrastructure`, `src/web`, `tests/unit`, `tests/integration`)
+- [x] T005 [P] Setup Vitest configuration (`vitest.config.ts`)
 
 ---
 
@@ -39,11 +39,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Create Agent entity definition in `src/domain/agent.ts` (Data Model)
-- [ ] T007 Create AgentManager interface in `src/domain/agentManager.ts` (In-memory store)
-- [ ] T008 Setup basic Express server structure in `src/infrastructure/server.ts`
-- [ ] T009 Define API routes structure in `src/infrastructure/server.ts` matching `contracts/openapi.yaml`
-- [ ] T010 [P] Create Process wrapper abstraction in `src/infrastructure/process.ts` (handling spawn/streams)
+- [x] T006 Create Agent entity definition in `src/domain/agent.ts` (Data Model)
+- [x] T007 Create AgentManager interface in `src/domain/agentManager.ts` (In-memory store)
+- [x] T008 Setup basic Express server structure in `src/infrastructure/server.ts`
+- [x] T009 Define API routes structure in `src/infrastructure/server.ts` matching `contracts/openapi.yaml`
+- [x] T010 [P] Create Process wrapper abstraction in `src/infrastructure/process.ts` (handling spawn/streams)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -59,21 +59,21 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation (TDD)**
 
-- [ ] T011 [P] [US1] Create unit tests for AgentManager (create/list) in `tests/unit/agentManager.test.ts`
-- [ ] T012 [P] [US1] Create integration test for POST /api/agents in `tests/integration/serverFlow.test.ts`
+- [x] T011 [P] [US1] Create unit tests for AgentManager (create/list) in `tests/unit/agentManager.test.ts`
+- [x] T012 [P] [US1] Create integration test for POST /api/agents in `tests/integration/serverFlow.test.ts`
 
 ### Documentation for User Story 1 (MANDATORY per Constitution) 📝
 
-- [ ] T013 [P] [US1] Document API usage for agent creation in `docs/api.md` (or inline comments)
+- [x] T013 [P] [US1] Document API usage for agent creation in `docs/api.md` (or inline comments)
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Implement AgentManager create/list logic in `src/domain/agentManager.ts`
-- [ ] T015 [US1] Implement Process spawning logic in `src/infrastructure/process.ts`
-- [ ] T016 [US1] Implement POST /api/agents endpoint in `src/infrastructure/server.ts`
-- [ ] T017 [US1] Implement GET /api/agents endpoint in `src/infrastructure/server.ts`
-- [ ] T018 [US1] Create basic HTML structure with "New Agent" form in `src/web/index.html`
-- [ ] T019 [US1] Implement frontend logic to submit form and update list in `src/web/app.js`
+- [x] T014 [US1] Implement AgentManager create/list logic in `src/domain/agentManager.ts`
+- [x] T015 [US1] Implement Process spawning logic in `src/infrastructure/process.ts`
+- [x] T016 [US1] Implement POST /api/agents endpoint in `src/infrastructure/server.ts`
+- [x] T017 [US1] Implement GET /api/agents endpoint in `src/infrastructure/server.ts`
+- [x] T018 [US1] Create basic HTML structure with "New Agent" form in `src/web/index.html`
+- [x] T019 [US1] Implement frontend logic to submit form and update list in `src/web/app.js`
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
