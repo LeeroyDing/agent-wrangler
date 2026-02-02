@@ -1,0 +1,128 @@
+openapi: 3.0.0
+info:
+  title: Agent Wrangler API
+  version: 1.0.0
+paths:
+  /api/agents:
+    get:
+      summary: List all agents
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+    post:
+      summary: Create and start a new agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgentRequest'
+      responses:
+        '201':
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+  
+  /api/agents/{id}:
+    get:
+      summary: Get agent details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+
+  /api/agents/{id}/stdin:
+    post:
+      summary: Send input to agent stdin
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                input:
+                  type: string
+      responses:
+        '204':
+          description: Input sent
+
+  /api/history/command:
+    get:
+      summary: Get last used command
+      responses:
+        '200':
+          description: Last command
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  command:
+                    type: string
+
+  /stream/logs/{id}:
+    get:
+      summary: Subscribe to agent logs (SSE)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stream of logs
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: "data: {'timestamp': '...', 'source': 'stdout', 'content': 'hello'}\n\n"
+
+components:
+  schemas:
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [running, error, stopped, waiting_input]
+        pid:
+          type: integer
+    CreateAgentRequest:
+      type: object
+      required: [name, command, working_directory]
+      properties:
+        name:
+          type: string
+        command:
+          type: string
+        working_directory:
+          type: string
