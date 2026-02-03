@@ -24,6 +24,23 @@
                 <div id="logs-container">
                     <pre id="logs-output"></pre>
                 </div>
+                
+                <div id="debug-controls" style="margin-top: 10px;">
+                    <label>
+                        <input type="checkbox" id="cb-debug-mode"> Show Debug Output
+                    </label>
+                </div>
+                <div id="debug-container" style="display: none; height: 150px; margin-top: 10px; gap: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <label>STDOUT</label>
+                        <textarea id="debug-stdout" readonly style="flex: 1; font-family: monospace;"></textarea>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <label>STDERR</label>
+                        <textarea id="debug-stderr" readonly style="flex: 1; font-family: monospace; color: red;"></textarea>
+                    </div>
+                </div>
+
                 <div id="input-container">
                     <input type="text" id="stdin-input" placeholder="Send input..." disabled>
                     <button id="btn-send">Send</button>

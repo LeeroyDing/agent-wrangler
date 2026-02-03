@@ -65,21 +65,48 @@ export function initApp() {
         document.getElementById('agent-detail').style.display = 'flex';
         document.getElementById('agent-name').textContent = agent.name;
         
+        // Fix 1: Update UI immediately with current status
         updateStatusUI(agent.status);
         
         const logsOutput = document.getElementById('logs-output');
         logsOutput.textContent = '';
         
-        if (eventSource) eventSource.close();
+        // Clear debug areas
+        const dbgOut = document.getElementById('debug-stdout');
+        if (dbgOut) dbgOut.value = '';
+        const dbgErr = document.getElementById('debug-stderr');
+        if (dbgErr) dbgErr.value = '';
+
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+        
+        // Re-fetch logs history if needed? The server streams *new* logs via SSE.
+        // But we should probably fetch existing logs first if we want persistence.
+        // For now, let's just rely on SSE for live updates.
         
         eventSource = new EventSource(`stream/logs/${agent.id}`);
+        console.log(`[SSE] Connecting to stream/logs/${agent.id}`);
         
+        eventSource.onopen = () => {
+            console.log(`[SSE] Connection opened for agent ${agent.id}`);
+        };
+
         eventSource.onmessage = (event) => {
-            const log = JSON.parse(event.data);
-            appendLog(log);
+            // console.log('[SSE] Message:', event.data); // Commented out to avoid spam
+            try {
+                const log = JSON.parse(event.data);
+                appendLog(log);
+            } catch (e) {
+                console.error('[SSE] JSON Parse Error:', e);
+            }
         };
         
         eventSource.addEventListener('status', (event) => {
+            console.log(`[SSE] Status update: ${event.data}`);
+            // Update the local agent object too so if we re-select it's correct
+            agent.status = event.data;
             updateStatusUI(event.data);
             const indicator = document.getElementById(`indicator-${agent.id}`);
             if (indicator) indicator.className = `status-indicator status-${event.data}`;
@@ -92,6 +119,20 @@ export function initApp() {
     }
 
     function appendLog(log) {
+        // Debug output always gets everything
+        if (log.source === 'stdout') {
+            const dbg = document.getElementById('debug-stdout');
+            if (dbg) dbg.value += log.content + '\n';
+        } else if (log.source === 'stderr') {
+            const dbg = document.getElementById('debug-stderr');
+            if (dbg) dbg.value += log.content + '\n';
+        }
+
+        // Filter main view: Don't show raw ACP protocol messages
+        if (log.content.startsWith('[ACP-IN]') || log.content.startsWith('[ACP-OUT]')) {
+            return;
+        }
+
         const logsOutput = document.getElementById('logs-output');
         const span = document.createElement('span');
         span.className = `log-${log.source}`;
@@ -104,10 +145,11 @@ export function initApp() {
 
     function updateStatusUI(status) {
         const statusEl = document.getElementById('agent-status');
-        statusEl.className = `status-indicator status-${status}`;
+        if (statusEl) statusEl.className = `status-indicator status-${status}`;
         
         const input = document.getElementById('stdin-input');
-        input.disabled = (status !== 'waiting_input');
+        // Ensure input is enabled for 'running' state as well
+        if (input) input.disabled = !['waiting_input', 'running'].includes(status);
     }
 
     async function handleSend() {
@@ -139,6 +181,12 @@ export function initApp() {
         document.getElementById('new-agent-form').style.display = 'none';
     };
 
+    const cbDebug = document.getElementById('cb-debug-mode');
+    if (cbDebug) cbDebug.onchange = (e) => {
+        const container = document.getElementById('debug-container');
+        if (container) container.style.display = e.target.checked ? 'flex' : 'none';
+    };
+
     function showNewAgentForm() {
         if (eventSource) eventSource.close();
         document.getElementById('agent-detail').style.display = 'none';
@@ -162,6 +210,9 @@ export function initApp() {
             const agent = await createAgent(data);
             const agents = await fetchAgents();
             renderAgentList(agents);
+            // Select the newly created agent. It might be 'running' initially.
+            // The server will transition it to 'waiting_input' soon.
+            // Our SSE connection in selectAgent will handle the status update.
             selectAgent(agent);
         } catch (err) {
             console.error(err);

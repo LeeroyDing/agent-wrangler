@@ -10,6 +10,7 @@ export const AgentSchema = z.object({
   working_directory: z.string().min(1),
   status: AgentStatusSchema,
   pid: z.number().int().optional(),
+  session_id: z.string().optional(),
   exit_code: z.number().int().optional(),
   created_at: z.date(),
 });
@@ -53,5 +54,9 @@ export class AgentInstance {
     this.data.status = status;
     if (pid !== undefined) this.data.pid = pid;
     if (exit_code !== undefined) this.data.exit_code = exit_code;
+  }
+
+  setSessionId(sessionId: string) {
+    this.data.session_id = sessionId;
   }
 }

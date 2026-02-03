@@ -26,26 +26,65 @@ export class ProcessWrapper extends EventEmitter {
       stdio: ['pipe', 'pipe', 'pipe']
     });
 
+    if (this.child.stdin) {
+        this.child.stdin.on('error', (err) => {
+             // Handle EPIPE (process exited before write completed) or other errors
+             // console.warn(`Process stdin error (likely exited): ${err.message}`);
+        });
+    }
+
     if (this.child.stdout) {
+      let buffer = '';
       this.child.stdout.on('data', (data: Buffer) => {
         const text = data.toString();
-        const lines = text.split('\n');
+        console.log(`[DEBUG] STDOUT RAW: ${JSON.stringify(text)}`); 
+        buffer += text;
         
-        for (const line of lines) {
-          if (line.trim().startsWith('ACP:')) {
-            try {
-              const jsonStr = line.trim().substring(4).trim();
-              const message = JSON.parse(jsonStr);
-              this.emit('acp', message);
-              // T026: Filter out raw ACP lines
-              continue; 
-            } catch (e) {
-              // Not valid JSON, treat as regular log
+        let boundary = buffer.indexOf('\n');
+        while (boundary !== -1) {
+            const line = buffer.substring(0, boundary);
+            buffer = buffer.substring(boundary + 1);
+            
+            const trimmed = line.trim();
+            // Support legacy/test 'ACP:' prefix OR standard JSON-RPC 2.0 messages
+            if (trimmed.startsWith('ACP:') || (trimmed.startsWith('{') && trimmed.includes('"jsonrpc"'))) {
+                try {
+                    let jsonStr = trimmed;
+                    if (trimmed.startsWith('ACP:')) {
+                        jsonStr = trimmed.substring(4).trim();
+                    }
+                    const message = JSON.parse(jsonStr);
+                    console.log('[DEBUG] ACP Message:', JSON.stringify(message));
+                    this.emit('acp', message);
+                    // Filter out ACP from stdout
+                    boundary = buffer.indexOf('\n');
+                    continue;
+                } catch (e) {
+                   console.error('[DEBUG] ACP Parse Error:', e);
+                }
             }
-          }
-          if (line) {
+            
+            console.log('[DEBUG] STDOUT Line:', JSON.stringify(line));
             this.emit('stdout', line);
-          }
+            boundary = buffer.indexOf('\n');
+        }
+        
+        // Handle remaining buffer (prompts) if it's not empty and doesn't look like incomplete ACP
+        if (buffer.length > 0 && !buffer.trimStart().startsWith('ACP:')) {
+             console.log('[DEBUG] STDOUT Partial:', JSON.stringify(buffer));
+             this.emit('stdout', buffer);
+             buffer = '';
+        }
+      });
+    }
+
+    if (this.child.stderr) {
+      this.child.stderr.on('data', (data: Buffer) => {
+        const text = data.toString();
+        // console.log(`[DEBUG] STDERR RAW: ${JSON.stringify(text)}`);
+        const lines = text.split('\n');
+        for (const line of lines) {
+          if (line) this.emit('stderr', line);
         }
       });
     }

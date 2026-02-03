@@ -90,14 +90,50 @@ describe('End-to-End System Lifecycle', () => {
   });
 
   it('should support ACP interaction loop', async () => {
-    const cmd = `echo 'ACP: {"type": "status", "status": "waiting_input"}' && read line && echo "GOT: $line"`;
+    // A mock agent script that performs the handshake and then enters the loop
+    const mockAgentScript = `
+      const readline = require('readline');
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+
+      rl.on('line', (line) => {
+        try {
+          const msg = JSON.parse(line);
+          if (msg.method === 'initialize') {
+             console.log(JSON.stringify({
+                jsonrpc: '2.0',
+                id: msg.id,
+                result: {
+                    protocolVersion: 1,
+                    agentCapabilities: { sessionCapabilities: {} },
+                    agentInfo: { name: 'mock', version: '1.0' }
+                }
+             }));
+          } else if (msg.method === 'session/new') {
+             console.log(JSON.stringify({
+                jsonrpc: '2.0',
+                id: msg.id,
+                result: { sessionId: 'mock-session-1' }
+             }));
+             // Send the status update that the test expects
+             console.log('ACP: {"type": "status", "status": "waiting_input"}');
+          } else if (msg.method === 'session/prompt') {
+             const input = msg.params.prompt[0].text;
+             // Echo back as log
+             console.log('GOT: ' + input);
+             process.exit(0);
+          }
+        } catch (e) {
+           // Ignore non-JSON
+        }
+      });
+    `;
     
     const createRes = await fetch(`${BASE_URL}/agents`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: 'ACP Interactive Agent',
-        command: cmd,
+        name: 'ACP Mock Agent',
+        command: `node -e "${mockAgentScript.replace(/"/g, '\\"')}"`, 
         working_directory: '.',
       }),
     });
@@ -133,5 +169,5 @@ describe('End-to-End System Lifecycle', () => {
         }
     }
     expect(finished).toBe(true);
-  });
+  }, 10000); // Increased timeout
 });
