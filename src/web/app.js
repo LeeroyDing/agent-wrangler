@@ -94,7 +94,7 @@ export function initApp() {
         };
 
         eventSource.onmessage = (event) => {
-            // console.log('[SSE] Message:', event.data); // Commented out to avoid spam
+            console.log('[SSE] Raw Message:', event.data); 
             try {
                 const log = JSON.parse(event.data);
                 appendLog(log);
@@ -119,6 +119,7 @@ export function initApp() {
     }
 
     function appendLog(log) {
+        console.log('[Frontend] appendLog called', log.source, log.content.substring(0, 50));
         // Debug output always gets everything
         if (log.source === 'stdout') {
             const dbg = document.getElementById('debug-stdout');

@@ -213,8 +213,12 @@ app.post('/api/agents/:id/stdin', async (req: Request, res: Response) => {
 // GET /stream/logs/:id
 app.get('/stream/logs/:id', async (req: Request, res: Response) => {
   const id = req.params.id as string;
+  console.log(`[SSE] Client connecting for agent ${id}`);
   const agent = await agentManager.getAgent(id);
-  if (!agent) return res.status(404).json({ error: 'Agent not found' });
+  if (!agent) {
+      console.log(`[SSE] Agent ${id} not found`);
+      return res.status(404).json({ error: 'Agent not found' });
+  }
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -222,15 +226,19 @@ app.get('/stream/logs/:id', async (req: Request, res: Response) => {
   // @ts-ignore
   if (res.flushHeaders) res.flushHeaders();
 
+  console.log(`[SSE] Connection established for agent ${id}. Sending history...`);
+
   for (const log of agent.getLogs()) {
     res.write(`data: ${JSON.stringify(log)}\n\n`);
   }
 
   const logListener = (log: any) => {
+    console.log(`[SSE] Sending log to agent ${id}: ${log.content.substring(0, 30)}...`); 
     res.write(`data: ${JSON.stringify(log)}\n\n`);
   };
 
   const statusListener = (status: string) => {
+    console.log(`[SSE] Sending status "${status}" to agent ${id}`);
     res.write(`event: status\ndata: ${status}\n\n`);
   };
 
@@ -248,6 +256,7 @@ app.get('/stream/logs/:id', async (req: Request, res: Response) => {
   }, 15000);
 
   req.on('close', () => {
+    console.log(`[SSE] Client disconnected for agent ${id}`);
     clearInterval(heartbeat);
     logEvents.off(`logs-${id}`, logListener);
     logEvents.off(`status-${id}`, statusListener);
