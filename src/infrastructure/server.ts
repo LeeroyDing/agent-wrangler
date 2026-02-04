@@ -5,6 +5,7 @@ import { InMemoryAgentManager } from '../domain/agentManager';
 import { ProcessWrapper } from './process';
 import { EventEmitter } from 'events';
 import fs from 'fs';
+import { promises as fsPromises } from 'fs';
 
 const app = express();
 app.use(express.json());
@@ -80,7 +81,7 @@ app.post('/api/agents', async (req: Request, res: Response) => {
           logEvents.emit(`logs-${agent.data.id}`, entry);
         });
 
-        processWrapper.on('acp', (msg) => {
+        processWrapper.on('acp', async (msg) => {
           // DEBUG LOG: ACP Message Received
           const logEntry = agent.addLog(`[ACP-IN] ${JSON.stringify(msg)}`, 'stdout');
           logEvents.emit(`logs-${agent.data.id}`, logEntry);
@@ -154,6 +155,61 @@ app.post('/api/agents', async (req: Request, res: Response) => {
               console.log(`Agent ${agent.data.id} stopped with reason: ${msg.result.stopReason}`);
               agent.setStatus('waiting_input');
               logEvents.emit(`status-${agent.data.id}`, 'waiting_input');
+          }
+
+          // Handle File System Requests
+          if (msg.method === 'fs/read_text_file') {
+              console.log(`[ACP] Reading file: ${msg.params.path}`);
+              try {
+                  const content = await fsPromises.readFile(msg.params.path, 'utf8');
+                  const response = {
+                      "jsonrpc": "2.0",
+                      "id": msg.id,
+                      "result": {
+                          "content": content
+                      }
+                  };
+                  processWrapper.write(JSON.stringify(response));
+                  // const logEntry = agent.addLog(`[ACP-OUT] Read file: ${msg.params.path}`, 'stdout');
+                  // logEvents.emit(`logs-${agent.data.id}`, logEntry);
+              } catch (err) {
+                  console.error(`[ACP] Failed to read file: ${msg.params.path}`, err);
+                  const errorResponse = {
+                      "jsonrpc": "2.0",
+                      "id": msg.id,
+                      "error": {
+                          "code": -32603,
+                          "message": `Failed to read file: ${(err as Error).message}`
+                      }
+                  };
+                  processWrapper.write(JSON.stringify(errorResponse));
+              }
+          }
+
+          if (msg.method === 'fs/write_text_file') {
+              console.log(`[ACP] Writing file: ${msg.params.path}`);
+              try {
+                  await fsPromises.writeFile(msg.params.path, msg.params.content, 'utf8');
+                  const response = {
+                      "jsonrpc": "2.0",
+                      "id": msg.id,
+                      "result": null
+                  };
+                  processWrapper.write(JSON.stringify(response));
+                  const logEntry = agent.addLog(`[ACP-OUT] Wrote file: ${msg.params.path}`, 'stdout');
+                  logEvents.emit(`logs-${agent.data.id}`, logEntry);
+              } catch (err) {
+                  console.error(`[ACP] Failed to write file: ${msg.params.path}`, err);
+                  const errorResponse = {
+                      "jsonrpc": "2.0",
+                      "id": msg.id,
+                      "error": {
+                          "code": -32603,
+                          "message": `Failed to write file: ${(err as Error).message}`
+                      }
+                  };
+                  processWrapper.write(JSON.stringify(errorResponse));
+              }
           }
 
           if (msg.type === 'status') {
