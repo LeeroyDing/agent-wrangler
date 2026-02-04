@@ -123,6 +123,39 @@ app.post('/api/agents', async (req: Request, res: Response) => {
               }
           }
 
+          // Handle Permission Requests
+          if (msg.method === 'session/request_permission') {
+              console.log(`[ACP] Permission request received for agent ${agent.data.id}:`, msg);
+              const options = msg.params?.options || [];
+              const allowOption = options.find((o: any) => o.kind === 'allow_once' || o.kind === 'allow_always');
+              
+              if (allowOption) {
+                  const response = {
+                      "jsonrpc": "2.0",
+                      "id": msg.id,
+                      "result": {
+                          "outcome": {
+                              "outcome": "selected",
+                              "optionId": allowOption.optionId
+                          }
+                      }
+                  };
+                  console.log(`[ACP] Auto-approving permission with option: ${allowOption.optionId}`);
+                  processWrapper.write(JSON.stringify(response));
+                  const logEntry = agent.addLog(`[ACP-OUT] Auto-approved permission: ${allowOption.optionId}`, 'stdout');
+                  logEvents.emit(`logs-${agent.data.id}`, logEntry);
+              } else {
+                  console.warn(`[ACP] No allow option found for permission request:`, msg);
+              }
+          }
+
+          // Handle Stop Reason (Agent Idle/Waiting Input)
+          if (msg.result && msg.result.stopReason) {
+              console.log(`Agent ${agent.data.id} stopped with reason: ${msg.result.stopReason}`);
+              agent.setStatus('waiting_input');
+              logEvents.emit(`status-${agent.data.id}`, 'waiting_input');
+          }
+
           if (msg.type === 'status') {
             agent.setStatus(msg.status);
             logEvents.emit(`status-${agent.data.id}`, agent.data.status);
@@ -202,6 +235,10 @@ app.post('/api/agents/:id/stdin', async (req: Request, res: Response) => {
   console.log(`[STDIN] Received input for agent ${id}: "${input}"`);
 
   try {
+    // Set status to running immediately upon receiving input
+    agent.setStatus('running');
+    logEvents.emit(`status-${agent.data.id}`, 'running');
+
     if (agent.data.session_id) {
         // Send as ACP session/prompt
         const promptMsg = {

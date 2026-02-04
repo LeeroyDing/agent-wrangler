@@ -139,10 +139,10 @@ header h1 { margin: 0; font-size: 1.5rem; }
     flex-shrink: 0;
 }
 
-.status-running { background-color: #198754; box-shadow: 0 0 5px #198754; }
+.status-running { background-color: #ffc107; box-shadow: 0 0 5px #ffc107; }
 .status-error { background-color: #dc3545; box-shadow: 0 0 5px #dc3545; }
 .status-stopped { background-color: #6c757d; }
-.status-waiting_input { background-color: #ffc107; box-shadow: 0 0 5px #ffc107; }
+.status-waiting_input { background-color: #198754; box-shadow: 0 0 5px #198754; }
 
 #new-agent-form {
     padding: 2rem;
