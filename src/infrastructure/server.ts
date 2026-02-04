@@ -147,7 +147,7 @@ app.post('/api/agents', async (req: Request, res: Response) => {
 
   } catch (error) {
     if (error instanceof ZodError) {
-      console.error('Validation error:', error.errors);
+      console.error('Validation error:', (error as any).errors);
       res.status(400).json({ error: (error as any).errors });
     } else {
       console.error('Server error:', error);
@@ -164,6 +164,30 @@ app.get('/api/agents/:id', async (req: Request, res: Response) => {
     res.json(agent.data);
   } else {
     res.status(404).json({ error: 'Agent not found' });
+  }
+});
+
+// PATCH /api/agents/:id
+const UpdateAgentSchema = z.object({
+  name: z.string().min(1),
+});
+
+app.patch('/api/agents/:id', async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  try {
+    const { name } = UpdateAgentSchema.parse(req.body);
+    const agent = await agentManager.renameAgent(id, name);
+    if (agent) {
+      res.json(agent.data);
+    } else {
+      res.status(404).json({ error: 'Agent not found' });
+    }
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(400).json({ error: (error as any).errors });
+    } else {
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 });
 

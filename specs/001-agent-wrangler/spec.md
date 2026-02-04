@@ -60,6 +60,20 @@ The user needs to send text commands or responses to the agent.
 1. **Given** a running agent in "Waiting for Input" status, **When** the user types in the input box and hits Send/Enter, **Then** the text is written to the agent process's standard input.
 2. **Given** an agent in "Running" status (not waiting for input), **When** the user views the agent detail, **Then** the stdin input box is disabled.
 
+### User Story 4 - Rename Agent (Priority: P2)
+
+The user wants to rename an agent to better reflect its current task or purpose.
+
+**Why this priority**: Improves organization when managing multiple agents.
+
+**Independent Test**: Create an agent, click edit, change name, verify update in list and header.
+
+**Acceptance Scenarios**:
+
+1. **Given** an agent detail view, **When** the user clicks "Edit" next to the name, **Then** the name becomes an editable input field.
+2. **Given** the editable input field, **When** the user enters a new name and clicks "Save", **Then** the agent's name is updated in the header and sidebar list.
+3. **Given** the editable input field, **When** the user clicks "Cancel", **Then** the name reverts to the original and the input field disappears.
+
 ### Edge Cases
 
 - What happens when the Working Directory does not exist? (Expect error on creation).
@@ -80,6 +94,7 @@ The user needs to send text commands or responses to the agent.
 - **FR-008**: System MUST implement log retention using a ring buffer, keeping only the most recent 1000 lines per agent.
 - **FR-009**: System MUST filter and hide lines starting with the ACP prefix from the user-facing log view, processing them only for status/state changes.
 - **FR-010**: System MUST only enable the `stdin` input UI for an agent when its status is "Waiting for Input" (Yellow).
+- **FR-011**: System MUST allow renaming an existing agent.
 
 ### Key Entities
 

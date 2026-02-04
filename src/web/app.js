@@ -38,12 +38,29 @@ export function initApp() {
         }
     }
 
+    async function renameAgent(id, name) {
+        const res = await fetch(`api/agents/${id}`, {
+            method: 'PATCH',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ name })
+        });
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Failed to rename agent: ${res.status} ${res.statusText} - ${errorText}`);
+        }
+        return res.json();
+    }
+
     function renderAgentList(agents) {
         const list = document.getElementById('agent-list');
         list.innerHTML = '';
         agents.forEach(agent => {
             const li = document.createElement('li');
             li.className = 'agent-item';
+            li.id = `agent-item-${agent.id}`; // Add ID for easier update
             
             const indicator = document.createElement('span');
             indicator.className = `status-indicator status-${agent.status}`;
@@ -51,6 +68,7 @@ export function initApp() {
             
             const name = document.createElement('span');
             name.textContent = agent.name;
+            name.id = `name-${agent.id}`; // Add ID for easier update
             
             li.appendChild(indicator);
             li.appendChild(name);
@@ -64,6 +82,10 @@ export function initApp() {
         document.getElementById('new-agent-form').style.display = 'none';
         document.getElementById('agent-detail').style.display = 'flex';
         document.getElementById('agent-name').textContent = agent.name;
+        
+        // Reset edit mode
+        document.getElementById('agent-header-view').style.display = 'flex';
+        document.getElementById('agent-header-edit').style.display = 'none';
         
         // Fix 1: Update UI immediately with current status
         updateStatusUI(agent.status);
@@ -172,6 +194,48 @@ export function initApp() {
     const stdinInput = document.getElementById('stdin-input');
     if (stdinInput) stdinInput.onkeydown = (e) => {
         if (e.key === 'Enter') handleSend();
+    };
+
+    // Rename handlers
+    const btnEditAgent = document.getElementById('btn-edit-agent');
+    if (btnEditAgent) btnEditAgent.onclick = () => {
+        document.getElementById('agent-header-view').style.display = 'none';
+        document.getElementById('agent-header-edit').style.display = 'flex';
+        const nameEl = document.getElementById('agent-name');
+        const inputEl = document.getElementById('edit-agent-name');
+        inputEl.value = nameEl.textContent;
+        inputEl.focus();
+    };
+
+    const btnCancelEditAgent = document.getElementById('btn-cancel-edit-agent');
+    if (btnCancelEditAgent) btnCancelEditAgent.onclick = () => {
+        document.getElementById('agent-header-view').style.display = 'flex';
+        document.getElementById('agent-header-edit').style.display = 'none';
+    };
+
+    const btnSaveAgentName = document.getElementById('btn-save-agent-name');
+    if (btnSaveAgentName) btnSaveAgentName.onclick = async () => {
+        const newName = document.getElementById('edit-agent-name').value;
+        if (!newName || !currentAgentId) return;
+        
+        try {
+            const agent = await renameAgent(currentAgentId, newName);
+            
+            // Update UI
+            document.getElementById('agent-name').textContent = agent.name;
+            document.getElementById('name-' + agent.id).textContent = agent.name;
+            
+            document.getElementById('agent-header-view').style.display = 'flex';
+            document.getElementById('agent-header-edit').style.display = 'none';
+            
+            // Update current agent object in memory if needed, though selectAgent re-fetches or uses closure
+            // Ideally we should update the `agents` list in memory too, but for now this visual update is enough
+            // or we could re-fetch the list:
+            // const agents = await fetchAgents();
+            // renderAgentList(agents); 
+        } catch (err) {
+            alert(err.message);
+        }
     };
 
     const btnNewAgent = document.getElementById('btn-new-agent');

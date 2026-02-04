@@ -11,6 +11,7 @@ export interface AgentManager {
   createAgent(params: CreateAgentParams): Promise<AgentInstance>;
   listAgents(): Promise<AgentInstance[]>;
   getAgent(id: string): Promise<AgentInstance | undefined>;
+  renameAgent(id: string, name: string): Promise<AgentInstance | undefined>;
 }
 
 export class InMemoryAgentManager implements AgentManager {
@@ -39,5 +40,13 @@ export class InMemoryAgentManager implements AgentManager {
 
   async getAgent(id: string): Promise<AgentInstance | undefined> {
     return this.agents.get(id);
+  }
+
+  async renameAgent(id: string, name: string): Promise<AgentInstance | undefined> {
+    const agent = this.agents.get(id);
+    if (!agent) return undefined;
+    
+    agent.data.name = name;
+    return agent;
   }
 }

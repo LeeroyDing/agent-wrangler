@@ -18,7 +18,15 @@
         <main id="main-content">
             <div id="agent-detail" style="display: none;">
                 <header>
-                    <h1 id="agent-name"></h1>
+                    <div id="agent-header-view" style="display: flex; align-items: center; gap: 10px;">
+                        <h1 id="agent-name"></h1>
+                        <button id="btn-edit-agent" class="small-btn">Edit</button>
+                    </div>
+                    <div id="agent-header-edit" style="display: none; align-items: center; gap: 10px;">
+                        <input type="text" id="edit-agent-name" placeholder="Agent Name">
+                        <button id="btn-save-agent-name" class="small-btn">Save</button>
+                        <button id="btn-cancel-edit-agent" class="small-btn">Cancel</button>
+                    </div>
                     <span id="agent-status" class="status-indicator"></span>
                 </header>
                 <div id="logs-container">
